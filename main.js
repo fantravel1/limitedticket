@@ -1,12 +1,11 @@
 /* ============================================
-   LimitedTicket — Main JavaScript
-   Mobile-First | Accessible | Performant
+   LimitedTicket — Main JavaScript (Redesigned)
+   Interactive | Animated | Performance-First
    ============================================ */
 
 (function () {
     'use strict';
 
-    // --- DOM Ready ---
     document.addEventListener('DOMContentLoaded', init);
 
     function init() {
@@ -16,6 +15,8 @@
         initScrollAnimations();
         initCountUp();
         initFAQAccessibility();
+        initInteractiveChecklist();
+        initHeroParticles();
         initComingSoonParticles();
     }
 
@@ -34,7 +35,6 @@
             document.body.style.overflow = expanded ? '' : 'hidden';
         });
 
-        // Close menu on link click
         var links = menu.querySelectorAll('.nav-link, .nav-cta');
         links.forEach(function (link) {
             link.addEventListener('click', function () {
@@ -44,7 +44,6 @@
             });
         });
 
-        // Close on Escape
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && menu.classList.contains('active')) {
                 toggle.setAttribute('aria-expanded', 'false');
@@ -84,7 +83,7 @@
     }
 
     // =============================================
-    // BACK TO TOP BUTTON
+    // BACK TO TOP
     // =============================================
     function initBackToTop() {
         var btn = document.getElementById('back-to-top');
@@ -115,18 +114,17 @@
     }
 
     // =============================================
-    // SCROLL ANIMATIONS (Intersection Observer)
+    // SCROLL ANIMATIONS
     // =============================================
     function initScrollAnimations() {
         if (!('IntersectionObserver' in window)) return;
 
-        // Add animate-on-scroll class to elements
         var selectors = [
-            '.about-card',
+            '.value-card',
             '.pillar-card',
             '.category-card',
             '.step-card',
-            '.query-card',
+            '.proof-card',
             '.readiness-feature',
             '.score-card',
             '.section-header'
@@ -188,14 +186,11 @@
     function animateCount(el) {
         var target = parseInt(el.getAttribute('data-count'), 10);
         var duration = 1800;
-        var start = 0;
         var startTime = null;
 
         function step(timestamp) {
             if (!startTime) startTime = timestamp;
             var progress = Math.min((timestamp - startTime) / duration, 1);
-
-            // Ease out cubic
             var eased = 1 - Math.pow(1 - progress, 3);
             var current = Math.floor(eased * target);
 
@@ -231,13 +226,106 @@
     }
 
     // =============================================
+    // INTERACTIVE CHECKLIST
+    // =============================================
+    function initInteractiveChecklist() {
+        var checklist = document.getElementById('interactive-checklist');
+        if (!checklist) return;
+
+        var items = checklist.querySelectorAll('.checklist-item');
+        var fillBar = document.getElementById('checklist-fill');
+        var countLabel = document.getElementById('checklist-count');
+
+        function updateProgress() {
+            var total = items.length;
+            var checked = 0;
+            items.forEach(function (item) {
+                if (item.getAttribute('data-checked') === 'true') {
+                    checked++;
+                }
+            });
+
+            var percent = (checked / total) * 100;
+            if (fillBar) fillBar.style.width = percent + '%';
+            if (countLabel) countLabel.textContent = checked + ' of ' + total + ' complete';
+        }
+
+        items.forEach(function (item) {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                var isChecked = item.getAttribute('data-checked') === 'true';
+                item.setAttribute('data-checked', isChecked ? 'false' : 'true');
+
+                var checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = !isChecked;
+
+                updateProgress();
+            });
+        });
+
+        // Initial state
+        updateProgress();
+    }
+
+    // =============================================
+    // HERO PARTICLES
+    // =============================================
+    function initHeroParticles() {
+        var container = document.getElementById('hero-particles');
+        if (!container) return;
+
+        var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion) return;
+
+        var particleCount = 20;
+
+        for (var i = 0; i < particleCount; i++) {
+            var particle = document.createElement('div');
+            var size = Math.random() * 3 + 1;
+            var opacity = Math.random() * 0.25 + 0.05;
+            var x = Math.random() * 100;
+            var y = Math.random() * 100;
+            var duration = Math.random() * 10 + 8;
+            var delay = Math.random() * 8;
+
+            particle.style.cssText =
+                'position:absolute;' +
+                'width:' + size + 'px;' +
+                'height:' + size + 'px;' +
+                'background:rgba(168,85,247,' + opacity + ');' +
+                'border-radius:50%;' +
+                'left:' + x + '%;' +
+                'top:' + y + '%;' +
+                'animation:heroParticle ' + duration + 's ease-in-out infinite;' +
+                'animation-delay:' + delay + 's;' +
+                'pointer-events:none;';
+            container.appendChild(particle);
+        }
+
+        if (!document.getElementById('hero-particle-keyframes')) {
+            var style = document.createElement('style');
+            style.id = 'hero-particle-keyframes';
+            style.textContent =
+                '@keyframes heroParticle {' +
+                '0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.2; }' +
+                '25% { transform: translate(20px, -30px) scale(1.3); opacity: 0.5; }' +
+                '50% { transform: translate(-15px, -60px) scale(1); opacity: 0.15; }' +
+                '75% { transform: translate(25px, -20px) scale(1.2); opacity: 0.4; }' +
+                '}';
+            document.head.appendChild(style);
+        }
+    }
+
+    // =============================================
     // COMING SOON PARTICLES
     // =============================================
     function initComingSoonParticles() {
         var container = document.querySelector('.coming-soon-particles');
         if (!container) return;
 
-        // Create floating particles
+        var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion) return;
+
         for (var i = 0; i < 30; i++) {
             var particle = document.createElement('div');
             particle.style.cssText =
@@ -253,16 +341,15 @@
             container.appendChild(particle);
         }
 
-        // Add keyframes
         if (!document.getElementById('particle-keyframes')) {
             var style = document.createElement('style');
             style.id = 'particle-keyframes';
             style.textContent =
                 '@keyframes particleFloat {' +
                 '0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }' +
-                '25% { transform: translate(' + (Math.random() * 60 - 30) + 'px, -40px) scale(1.5); opacity: 0.6; }' +
-                '50% { transform: translate(' + (Math.random() * 60 - 30) + 'px, -80px) scale(1); opacity: 0.3; }' +
-                '75% { transform: translate(' + (Math.random() * 60 - 30) + 'px, -40px) scale(1.3); opacity: 0.5; }' +
+                '25% { transform: translate(20px, -40px) scale(1.5); opacity: 0.6; }' +
+                '50% { transform: translate(-10px, -80px) scale(1); opacity: 0.3; }' +
+                '75% { transform: translate(15px, -40px) scale(1.3); opacity: 0.5; }' +
                 '}';
             document.head.appendChild(style);
         }
